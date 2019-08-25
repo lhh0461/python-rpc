@@ -1,0 +1,15 @@
+// [START declaration]
+syntax = "proto3";
+package ocr;
+// [END declaration]
+
+// [START messages]
+message DataPair {
+    string data_path = 1;
+    int32 data_label = 2;
+}
+
+message DataPairList {
+    repeated DataPair data_pair = 1;
+}
+// [END messages]
