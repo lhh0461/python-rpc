@@ -1,0 +1,41 @@
+<root>
+    <server>
+        <path>module/test</path>
+        <function>rpc_server_hello</function>
+        <args>
+            <arg>RPC_INT32</arg>
+            <arg>RPC_PB</arg>
+            <arg>RPC_STRING</arg>
+        </args>
+        <deamon>1</deamon>
+    </server>
+
+    <server>
+        <path>module/test</path>
+        <function>rpc_server_test</function>
+        <args>
+            <arg>RPC_INT32</arg>
+            <arg>RPC_PB</arg>
+        </args>
+        <deamon>1</deamon>
+        <desc>测试接口</desc>
+    </server>
+    
+    <client>
+        <function>rpc_clent_test</function>
+        <args>
+            <arg>RPC_INT16</arg>
+            <arg>RPC_PB</arg>
+        </args>
+    </client>
+    
+    <host>
+        <path>module/test</path>
+        <function>rpc_host_test</function>
+        <args>
+            <arg>RPC_INT8</arg>
+            <arg>RPC_STRING</arg>
+        </args>
+        <deamon>1</deamon>
+    </host>
+</root>
