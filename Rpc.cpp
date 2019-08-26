@@ -6,7 +6,7 @@
 #include <Python.h>
 
 #include <msgpack.hpp>
-#include "tinyxml2.h"
+#include <tinyxml2.h>
 
 #include "Rpc.h"
 
@@ -29,9 +29,9 @@ CRpc::~CRpc()
     m_RpcTable.clear();
 }
 
-int CRpc::Init(const string & cfg)
+int CRpc::Init(const string & cCfgPath)
 {
-    ParseCfg(cfg);
+    ParseCfg(cCfgPath);
 }
 
 eRpcFieldType CRpc::GetArgTypeByName(const char * name)
@@ -97,7 +97,7 @@ bool CompareFunc(const stRpcFunction *first, const stRpcFunction *second)
     return first->name < second->name;
 }
 
-void CRpc::ParseCfg(const string &cfg)
+void CRpc::ParseCfg(const string &cCfgPath)
 {
     XMLDocument doc;
     std::list<stRpcFunction *> rpc_list;
@@ -138,7 +138,7 @@ RPC_PID CRpc::GetPidByName(const char * func_name)
     return 0;
 }
 
-int check_field_type(int field_type, PyObject *item)
+int CRpc::CheckFieldType(int field_type, PyObject *item)
 {
     switch(field_type) {
         case RPC_INT32:
@@ -162,7 +162,7 @@ int check_field_type(int field_type, PyObject *item)
 
 int CRpc::PackField(eRpcFieldType field, PyObject *item, msgpack::packer<msgpack::sbuffer> &packer)
 {
-    if (check_field_type(field, item) == -1) {
+    if (CheckFieldType(field, item) == -1) {
         fprintf(stderr, "pack field type error. expected_type=%d,type_name=%s\n", field, Py_TYPE(item)->tp_name);
         return -1;
     }
