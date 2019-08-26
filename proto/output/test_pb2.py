@@ -16,63 +16,39 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='test.proto',
-  package='ocr',
+  package='mail',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\ntest.proto\x12\x03ocr\"1\n\x08\x44\x61taPair\x12\x11\n\tdata_path\x18\x01 \x01(\t\x12\x12\n\ndata_label\x18\x02 \x01(\x05\"0\n\x0c\x44\x61taPairList\x12 \n\tdata_pair\x18\x01 \x03(\x0b\x32\r.ocr.DataPairb\x06proto3')
+  serialized_pb=_b('\n\ntest.proto\x12\x04mail\"8\n\x08MailData\x12\n\n\x02id\x18\x01 \x01(\x05\x12\r\n\x05title\x18\x02 \x01(\t\x12\x11\n\titem_list\x18\x03 \x03(\x05\x62\x06proto3')
 )
 
 
 
 
-_DATAPAIR = _descriptor.Descriptor(
-  name='DataPair',
-  full_name='ocr.DataPair',
+_MAILDATA = _descriptor.Descriptor(
+  name='MailData',
+  full_name='mail.MailData',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='data_path', full_name='ocr.DataPair.data_path', index=0,
-      number=1, type=9, cpp_type=9, label=1,
+      name='id', full_name='mail.MailData.id', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='title', full_name='mail.MailData.title', index=1,
+      number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='data_label', full_name='ocr.DataPair.data_label', index=1,
-      number=2, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=19,
-  serialized_end=68,
-)
-
-
-_DATAPAIRLIST = _descriptor.Descriptor(
-  name='DataPairList',
-  full_name='ocr.DataPairList',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='data_pair', full_name='ocr.DataPairList.data_pair', index=0,
-      number=1, type=11, cpp_type=10, label=3,
+      name='item_list', full_name='mail.MailData.item_list', index=2,
+      number=3, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -89,28 +65,19 @@ _DATAPAIRLIST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=70,
-  serialized_end=118,
+  serialized_start=20,
+  serialized_end=76,
 )
 
-_DATAPAIRLIST.fields_by_name['data_pair'].message_type = _DATAPAIR
-DESCRIPTOR.message_types_by_name['DataPair'] = _DATAPAIR
-DESCRIPTOR.message_types_by_name['DataPairList'] = _DATAPAIRLIST
+DESCRIPTOR.message_types_by_name['MailData'] = _MAILDATA
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-DataPair = _reflection.GeneratedProtocolMessageType('DataPair', (_message.Message,), dict(
-  DESCRIPTOR = _DATAPAIR,
+MailData = _reflection.GeneratedProtocolMessageType('MailData', (_message.Message,), dict(
+  DESCRIPTOR = _MAILDATA,
   __module__ = 'test_pb2'
-  # @@protoc_insertion_point(class_scope:ocr.DataPair)
+  # @@protoc_insertion_point(class_scope:mail.MailData)
   ))
-_sym_db.RegisterMessage(DataPair)
-
-DataPairList = _reflection.GeneratedProtocolMessageType('DataPairList', (_message.Message,), dict(
-  DESCRIPTOR = _DATAPAIRLIST,
-  __module__ = 'test_pb2'
-  # @@protoc_insertion_point(class_scope:ocr.DataPairList)
-  ))
-_sym_db.RegisterMessage(DataPairList)
+_sym_db.RegisterMessage(MailData)
 
 
 # @@protoc_insertion_point(module_scope)

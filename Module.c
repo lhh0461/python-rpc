@@ -9,33 +9,19 @@ spam_system(PyObject *self, PyObject *args)
     int sts;
     if (!PyArg_ParseTuple(args, "s", &command))
         return NULL;
-    sts = system(comand);
+    sts = system(command);
     if (sts < 0) {
-        PyErr_SetString(args, "s", &command);
+        PyErr_SetString(args, command);
     }
     return PyLong_FromLong(sts);
 }
 
-PyMODINIT_FUNC
-PyInit_spam(void)
-{
-    PyObject *m;
-    
-    m = PyModule_create(&spanmodule);
-    if (m == NULL)
-        return NULL;
-    SpamError = PyErr_NewException("spam.err", NULL, NULL);
-    Py_INCREF(SpamError);
-    PyModule_AddObject(m, "error", SpamError);
-    return m;
-}
-
 static PyMethodDef SpamMethods[] = {
-    {"system", spam_system, METH_VARARGS， "Exec a shell command"},
+    {"system", spam_system, METH_VARARGS, "Exec a shell command"},
     {NULL, NULL, 0, NULL}
 };
 
-static stuct PyModuleDef spammodule = {
+static struct PyModuleDef spammodule = {
     PyModuleDef_HEAD_INIT,
     "spam",
     NULL,
@@ -46,5 +32,13 @@ static stuct PyModuleDef spammodule = {
 PyMODINIT_FUNC
 PyInit_spam(void)
 {
-    return PyModule_Create(&spammodule);
+    PyObject *m;
+    
+    m = PyModule_Create(&spammodule);
+    if (m == NULL)
+        return NULL;
+    SpamError = PyErr_NewException("spam.err", NULL, NULL);
+    Py_INCREF(SpamError);
+    PyModule_AddObject(m, "error", SpamError);
+    return m;
 }

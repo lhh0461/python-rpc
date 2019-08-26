@@ -94,29 +94,33 @@ void CRpc::ParseSection(XMLElement *root, eRpcType type, const char * name, std:
 
 bool CompareFunc(const stRpcFunction *first, const stRpcFunction *second)
 {
-    return first->name < second->name;
+    return first->module < scond->module && first->name < second->name;
 }
 
 void CRpc::ParseCfg(const string &cCfgPath)
 {
     XMLDocument doc;
-    std::list<stRpcFunction *> rpc_list;
-    //foreach xml
-    doc.LoadFile(cfg.c_str());
-    XMLElement *root = doc.FirstChildElement("root");
-    if (root) {
-        ParseSection(root, RPC_SERVER, "server", rpc_list);
-        ParseSection(root, RPC_CLIENT, "client", rpc_list);
-        ParseSection(root, RPC_HOST, "host", rpc_list);
-        rpc_list.sort(CompareFunc);
-        RPC_PID pid = 1;
-        for (auto it : rpc_list) {
-            m_Name2Pid[it->name] = pid;
-            m_RpcTable[pid] = it;
-            pid++;
+    std::list<stRpcFunction *> lRpcList;
+    vertor<string> vecCfgList;
+    GetPathFiles(cCfgPath, vecCfgList);
+    for (auto it : vecCfgList) 
+    {
+        doc.LoadFile(it->c_str());
+        XMLElement *root = doc.FirstChildElement("root");
+        if (root) {
+            ParseSection(root, RPC_SERVER, "server", lRpcList);
+            ParseSection(root, RPC_CLIENT, "client", lRpcList);
+            ParseSection(root, RPC_HOST, "host", lRpcList);
+        } else {
+            assert(0);
         }
-    } else {
-       //TODO 
+    }
+    lRpcList.sort(CompareFunc);
+    RPC_PID pid = 1;
+    for (auto it : lRpcList) {
+        m_Name2Pid[it->name] = pid;
+        m_RpcTable[pid] = it;
+        pid++;
     }
 }
 

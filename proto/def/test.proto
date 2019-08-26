@@ -1,15 +1,12 @@
 // [START declaration]
 syntax = "proto3";
-package ocr;
+package mail;
 // [END declaration]
 
 // [START messages]
-message DataPair {
-    string data_path = 1;
-    int32 data_label = 2;
-}
-
-message DataPairList {
-    repeated DataPair data_pair = 1;
+message MailData {
+    int32 id = 1;
+    string title = 2;
+    repeated int32 item_list = 3;
 }
 // [END messages]
