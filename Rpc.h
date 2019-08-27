@@ -3,12 +3,15 @@
 
 #include <list>
 #include <map>
-#include <Python.h>
-#include <msgpack.hpp>
-#include "tinyxml2.h"
+#include <string>
 
-using std::string;
+#include <msgpack.hpp>
+#include <tinyxml2.h>
+
+using namespace std;
 using namespace tinyxml2;
+
+typedef struct PyObject PyObject;
 
 namespace XEngine
 {
@@ -43,11 +46,11 @@ struct stRpcFunction
 {
     eRpcType type;
     RPC_PID pid;
-    std::string name;
-    std::string module;
+    string name;
+    string module;
     int c_imp;
     eRpcDeamonType deamon;
-    std::list<eRpcFieldType> args;
+    list<eRpcFieldType> args;
     RPC_FUNCTION c_function;
 };
 
@@ -57,21 +60,21 @@ public:
     CRpc();
     ~CRpc();
     int Init(const string & cCfgPath);
-    RPC_PID GetPidByName(const char * func_name);
+    RPC_PID GetPidByName(const string & cFuncName);
     int Pack(RPC_PID pid, PyObject *obj, msgpack::sbuffer &sbuf);
     PyObject *UnPack(const char *buf, size_t len);
 private:
-    stRpcFunction *GetFunctionById(RPC_PID function_id);
+    stRpcFunction *GetFunctionById(RPC_PID pid);
     int PackField(eRpcFieldType field, PyObject *item, msgpack::packer<msgpack::sbuffer> &packer);
     PyObject *UnPackField(eRpcFieldType field, msgpack::unpacker &unpacker);
 private:
-    stRpcFunction * ParseFunc(XMLElement *elem, eRpcType type);
-    void ParseSection(XMLElement *root, eRpcType type, const char * name, std::list<stRpcFunction *> &rpc_list);
+    stRpcFunction *ParseFunc(XMLElement *elem, eRpcType type);
+    void ParseSection(XMLElement *root, eRpcType type, const char * name, std::list<stRpcFunction *> &lRpcList);
     void ParseCfg(const string &cfg);
-    eRpcFieldType GetArgTypeByName(const char * name);
+    eRpcFieldType GetArgTypeByName(const string & name);
 private:
-    std::map<std::string, RPC_PID> m_Name2Pid;
-    std::map<RPC_PID, stRpcFunction *> m_RpcTable;
+    map<string, RPC_PID> m_Name2Pid;
+    map<RPC_PID, stRpcFunction *> m_RpcTable;
 };
 
 }
