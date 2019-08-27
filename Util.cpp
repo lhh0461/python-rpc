@@ -4,11 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <string>
-#include <vector>
-
-using std::vector;
-using std::string;
+#include "Util.h"
 
 int GetPathFiles(const char *basePath, vector<string> & filelist)
 {
@@ -29,7 +25,7 @@ int GetPathFiles(const char *basePath, vector<string> & filelist)
             continue;
         else if(ptr->d_type == 8)    ///file
         {
-            filelist.push_back(std::string(ptr->d_name));
+            filelist.push_back(std::string(basePath)+std::string(ptr->d_name));
         }
         else if(ptr->d_type == 10)    ///link file
         {
@@ -41,7 +37,7 @@ int GetPathFiles(const char *basePath, vector<string> & filelist)
             strcat(base,"/");
             strcat(base,ptr->d_name);
             filelist.push_back(std::string(ptr->d_name));
-            readFileList(base, filelist);
+            GetPathFiles(base, filelist);
         }
     }
     closedir(dir);

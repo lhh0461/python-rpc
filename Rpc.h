@@ -1,6 +1,7 @@
 #ifndef __RPC__
 #define __RPC__
 
+#include <Python.h>
 #include <list>
 #include <map>
 #include <string>
@@ -10,8 +11,6 @@
 
 using namespace std;
 using namespace tinyxml2;
-
-typedef struct PyObject PyObject;
 
 namespace XEngine
 {
@@ -72,10 +71,13 @@ private:
     void ParseSection(XMLElement *root, eRpcType type, const char * name, std::list<stRpcFunction *> &lRpcList);
     void ParseCfg(const string &cfg);
     eRpcFieldType GetArgTypeByName(const string & name);
+    int CheckFieldType(int field_type, PyObject *item);
 private:
     map<string, RPC_PID> m_Name2Pid;
     map<RPC_PID, stRpcFunction *> m_RpcTable;
 };
+
+extern "C" CRpc *g_Rpc;
 
 }
 

@@ -9,10 +9,13 @@
 #include <tinyxml2.h>
 
 #include "Rpc.h"
+#include "Util.h"
 
 using namespace std;
 using namespace tinyxml2;
 using namespace XEngine;
+
+CRpc *g_Rpc;
 
 CRpc::CRpc()
 {
@@ -34,19 +37,19 @@ int CRpc::Init(const string & cCfgPath)
     ParseCfg(cCfgPath);
 }
 
-eRpcFieldType CRpc::GetArgTypeByName(const char * name)
+eRpcFieldType CRpc::GetArgTypeByName(const string & name)
 {
-    if (strcmp(name, "RPC_INT32") == 0) {
+    if (name == "RPC_INT32") {
         return RPC_INT32;
-    } else if (strcmp(name, "RPC_INT16") == 0) {
+    } else if (name == "RPC_INT16") {
         return RPC_INT32;
-    } else if (strcmp(name, "RPC_PB") == 0) {
+    } else if (name == "RPC_PB") {
         return RPC_PB;
-    } else if (strcmp(name, "RPC_INT8") == 0) {
+    } else if (name == "RPC_INT8") {
         return RPC_INT32;
-    } else if (strcmp(name, "RPC_STRING") == 0) {
+    } else if (name == "RPC_STRING") {
         return RPC_STRING;
-    } else if (strcmp(name, "RPC_FLOAT") == 0) {
+    } else if (name == "RPC_FLOAT") {
         return RPC_FLOAT;
     }
 }
@@ -94,17 +97,18 @@ void CRpc::ParseSection(XMLElement *root, eRpcType type, const char * name, std:
 
 bool CompareFunc(const stRpcFunction *first, const stRpcFunction *second)
 {
-    return first->module < scond->module && first->name < second->name;
+    return first->module < second->module && first->name < second->name;
 }
 
 void CRpc::ParseCfg(const string &cCfgPath)
 {
     XMLDocument doc;
     std::list<stRpcFunction *> lRpcList;
-    vertor<string> vecCfgList;
-    GetPathFiles(cCfgPath, vecCfgList);
-    for (auto it : vecCfgList) 
+    vector<string> vecCfgList;
+    GetPathFiles(cCfgPath.c_str(), vecCfgList);
+    for (auto it = vecCfgList.begin(); it != vecCfgList.end(); it++)
     {
+        cout << *it << endl; 
         doc.LoadFile(it->c_str());
         XMLElement *root = doc.FirstChildElement("root");
         if (root) {
@@ -133,7 +137,7 @@ inline stRpcFunction *CRpc::GetFunctionById(RPC_PID function_id)
     return NULL;
 }
 
-RPC_PID CRpc::GetPidByName(const char * func_name)
+RPC_PID CRpc::GetPidByName(const string & func_name)
 {
     auto iter = m_Name2Pid.find(func_name);
     if (iter != m_Name2Pid.end()) {
