@@ -15,3 +15,5 @@ print(type(mail_data.SerializeToString()))
 
 packer_buf = rpc.pack("rpc_clent_test", (1111, mail_data.SerializeToString()))
 print(packer_buf)
+unpack_obj = rpc.unpack(packer_buf)
+print("unpack", unpack_obj)

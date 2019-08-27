@@ -108,7 +108,6 @@ void CRpc::ParseCfg(const string &cCfgPath)
     GetPathFiles(cCfgPath.c_str(), vecCfgList);
     for (auto it = vecCfgList.begin(); it != vecCfgList.end(); it++)
     {
-        cout << *it << endl; 
         doc.LoadFile(it->c_str());
         XMLElement *root = doc.FirstChildElement("root");
         if (root) {

@@ -27,9 +27,31 @@ static PyObject *pack(PyObject *self, PyObject *args)
     return PyBytes_FromStringAndSize(sbuf.data(), sbuf.size());
 }
 
+static PyObject *unpack(PyObject *self, PyObject *args)
+{
+    PyObject *obj;
+
+    if (!PyArg_ParseTuple(args, "O", &obj))
+        return NULL;
+    
+    if (!PyBytes_CheckExact(obj)) {
+        PyErr_Format(PyExc_TypeError, "pack obj type error type=%s", Py_TYPE(obj)->tp_name);
+        return NULL;
+    }
+
+    const char *str = PyBytes_AsString(obj);
+    Py_ssize_t size = PyBytes_Size(obj);
+
+    PyObject *unpacker = g_Rpc->UnPack(str, size);
+    PyObject_Print((PyObject *)unpacker, stdout, 0);
+    printf("\n");
+
+    return unpacker;
+}
+
 static PyMethodDef RpcMethods[] = {
     {"pack", pack, METH_VARARGS, "rpc pack to buf"},
-    //{"unpack", unpack, METH_VARARGS, "Rpc unpack from buf"},
+    {"unpack", unpack, METH_VARARGS, "Rpc unpack from buf"},
     {NULL, NULL, 0, NULL}
 };
 
