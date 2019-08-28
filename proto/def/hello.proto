@@ -1,12 +1,12 @@
 // [START declaration]
 syntax = "proto3";
-package mail;
+package hello;
 // [END declaration]
 
 // [START messages]
-message MailData {
+message HelloData {
     int32 id = 1;
-    string title = 2;
-    repeated int32 item_list = 3;
+    string name = 2;
+    repeated int32 id_list = 3;
 }
 // [END messages]

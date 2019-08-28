@@ -26,10 +26,11 @@ enum eRpcType
 
 enum eRpcFieldType
 {
-    RPC_INT32 = 1,
+    RPC_INT = 1,
     RPC_STRING = 2,
-    RPC_FLOAT = 3,
+    RPC_BOOL = 3,
     RPC_PB = 4,
+    RPC_FLOAT = 5,
 };
 
 enum eRpcDeamonType

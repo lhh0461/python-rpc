@@ -20,7 +20,10 @@ static PyObject *pack(PyObject *self, PyObject *args)
     }
 
     msgpack::sbuffer sbuf;
-    g_Rpc->Pack(g_Rpc->GetPidByName(func), obj, sbuf);
+    if (g_Rpc->Pack(g_Rpc->GetPidByName(func), obj, sbuf) < 0) {
+        PyErr_SetString(RpcError, "rpc pack fail");
+        return NULL;
+    }
 
     return PyBytes_FromStringAndSize(sbuf.data(), sbuf.size());
 }

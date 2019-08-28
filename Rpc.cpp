@@ -39,18 +39,16 @@ int CRpc::Init(const string & cCfgPath)
 
 eRpcFieldType CRpc::GetArgTypeByName(const string & name)
 {
-    if (name == "RPC_INT32") {
-        return RPC_INT32;
-    } else if (name == "RPC_INT16") {
-        return RPC_INT32;
-    } else if (name == "RPC_PB") {
-        return RPC_PB;
-    } else if (name == "RPC_INT8") {
-        return RPC_INT32;
+    if (name == "RPC_INT") {
+        return RPC_INT;
     } else if (name == "RPC_STRING") {
         return RPC_STRING;
+    } else if (name == "RPC_PB") {
+        return RPC_PB;
     } else if (name == "RPC_FLOAT") {
         return RPC_FLOAT;
+    } else if (name == "RPC_BOOL") {
+        return RPC_BOOL;
     }
 }
 
@@ -65,7 +63,7 @@ stRpcFunction * CRpc::ParseFunc(XMLElement *elem, eRpcType type)
         pFunction->module = string(field_elem->GetText());
 
         field_elem = elem->FirstChildElement("deamon");
-        field_elem->QueryIntText(&pFunction->c_imp);
+        field_elem->QueryIntText((int *)&pFunction->deamon);
     }
 
     field_elem = elem->FirstChildElement("function");
@@ -148,7 +146,7 @@ RPC_PID CRpc::GetPidByName(const string & func_name)
 int CRpc::CheckFieldType(int field_type, PyObject *item)
 {
     switch(field_type) {
-        case RPC_INT32:
+        case RPC_INT:
             if (!PyLong_CheckExact(item)) return -1;
             break;
         case RPC_STRING:
@@ -160,8 +158,11 @@ int CRpc::CheckFieldType(int field_type, PyObject *item)
         case RPC_PB:
             if (!PyBytes_CheckExact(item)) return -1;
             break;
+        case RPC_BOOL:
+            if (!PyBool_Check(item) && !PyLong_CheckExact(item)) return -1;
+            break;
         default:
-            fprintf(stderr, "unknown field type=%d", field_type);
+            fprintf(stderr, "check field unknown field type=%d\n", field_type);
             return -1;
     }
     return 0;
@@ -175,8 +176,8 @@ int CRpc::PackField(eRpcFieldType field, PyObject *item, msgpack::packer<msgpack
     }
 
     switch(field) {
-        case RPC_INT32:
-            packer.pack((uint32_t)PyLong_AsLong(item));
+        case RPC_INT:
+            packer.pack(PyLong_AsLong(item));
             break;
         case RPC_STRING: 
             {
@@ -187,7 +188,7 @@ int CRpc::PackField(eRpcFieldType field, PyObject *item, msgpack::packer<msgpack
                 break;
             }
         case RPC_FLOAT:
-            packer.pack((float)PyFloat_AS_DOUBLE(item));
+            packer.pack(PyFloat_AS_DOUBLE(item));
             break;
         case RPC_PB:
             {
@@ -197,8 +198,14 @@ int CRpc::PackField(eRpcFieldType field, PyObject *item, msgpack::packer<msgpack
                 packer.pack_bin_body(str, (uint32_t)size);
                 break;
             }
+        case RPC_BOOL:
+            if (PyBool_Check(item))
+                packer.pack(item == Py_True ? true : false);
+            if (PyLong_CheckExact(item))
+                packer.pack(PyLong_AsLong(item) > 0 ? true : false);
+            break;
         default:
-            fprintf(stderr, "unknown field type=%d", field);
+            fprintf(stderr, "pack field unknown field type=%d\n", field);
             return -1;
     }
     return 0;
@@ -242,13 +249,16 @@ PyObject *CRpc::UnPackField(eRpcFieldType field, msgpack::unpacker &unpacker)
     if (unpacker.next(result)) {
         msgpack::object obj = result.get();
         switch(field) {
-            case RPC_INT32:
+            case RPC_INT:
                 return PyLong_FromLong(obj.via.u64);
             case RPC_STRING: 
+                return PyUnicode_FromStringAndSize(obj.via.str.ptr, obj.via.str.size);
             case RPC_PB:
                 return PyBytes_FromStringAndSize(obj.via.bin.ptr, obj.via.bin.size);
             case RPC_FLOAT:
                 return PyFloat_FromDouble(obj.via.f64);
+            case RPC_BOOL:
+                return PyBool_FromLong(obj.via.boolean);
             default:
                 assert(0);
         }
