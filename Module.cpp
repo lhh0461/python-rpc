@@ -20,8 +20,6 @@ static PyObject *pack(PyObject *self, PyObject *args)
     }
 
     msgpack::sbuffer sbuf;
-    msgpack::packer<msgpack::sbuffer> pk(&sbuf);
-
     g_Rpc->Pack(g_Rpc->GetPidByName(func), obj, sbuf);
 
     return PyBytes_FromStringAndSize(sbuf.data(), sbuf.size());
@@ -42,11 +40,12 @@ static PyObject *unpack(PyObject *self, PyObject *args)
     const char *str = PyBytes_AsString(obj);
     Py_ssize_t size = PyBytes_Size(obj);
 
-    PyObject *unpacker = g_Rpc->UnPack(str, size);
-    PyObject_Print((PyObject *)unpacker, stdout, 0);
-    printf("\n");
-
-    return unpacker;
+    PyObject *unpackObj = g_Rpc->UnPack(str, size);
+    if (unpackObj == NULL) {
+        PyErr_SetString(RpcError, "Rpc unpack fail");
+        return NULL;
+    }
+    return unpackObj;
 }
 
 static PyMethodDef RpcMethods[] = {
