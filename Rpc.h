@@ -17,8 +17,6 @@ namespace XEngine
 
 typedef uint16_t RPC_PID;
 
-typedef void (* RPC_FUNCTION)(int id, PyObject *obj);
-
 enum eRpcType
 {
     RPC_SERVER = 1,
@@ -47,10 +45,8 @@ struct stRpcFunction
     RPC_PID pid;
     string name;
     string module;
-    int c_imp;
     eRpcDeamonType deamon;
     list<eRpcFieldType> args;
-    RPC_FUNCTION c_function;
 };
 
 class CRpc
