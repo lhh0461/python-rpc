@@ -45,7 +45,7 @@ static PyObject *unpack(PyObject *self, PyObject *args)
 
     PyObject *unpackObj = g_Rpc->UnPack(str, size);
     if (unpackObj == NULL) {
-        PyErr_SetString(RpcError, "Rpc unpack fail");
+        PyErr_SetString(RpcError, "rpc unpack fail");
         return NULL;
     }
     return unpackObj;
@@ -66,18 +66,18 @@ static PyObject *rpc_call(PyObject *self, PyObject *args)
     const char *str = PyBytes_AsString(obj);
     Py_ssize_t size = PyBytes_Size(obj);
 
-    PyObject *unpackObj = g_Rpc->UnPack(str, size);
-    if (unpackObj == NULL) {
-        PyErr_SetString(RpcError, "Rpc unpack fail");
+    int res = g_Rpc->Dispatch(str, size);
+    if (res < 0) {
+        PyErr_SetString(RpcError, "rpc dispatch fail");
         return NULL;
     }
-    return unpackObj;
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef RpcMethods[] = {
     {"pack", pack, METH_VARARGS, "rpc pack to buf"},
     {"unpack", unpack, METH_VARARGS, "rpc unpack from buf"},
-    {"rpc_call", unpack, METH_VARARGS, "rpc unpack from buf"},
+    {"rpc_call", rpc_call, METH_VARARGS, "rpc unpack from buf"},
     {NULL, NULL, 0, NULL}
 };
 

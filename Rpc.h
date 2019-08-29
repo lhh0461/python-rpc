@@ -59,6 +59,8 @@ public:
     RPC_PID GetPidByName(const string & cFuncName);
     int Pack(RPC_PID pid, PyObject *obj, msgpack::sbuffer &sbuf);
     PyObject *UnPack(const char *buf, size_t len);
+    PyObject *UnPack(RPC_PID pid, msgpack::unpacker &unpacker);
+    int Dispatch(const char *buf, size_t len);
 private:
     stRpcFunction *GetFunctionById(RPC_PID pid);
     int PackField(eRpcFieldType field, PyObject *item, msgpack::packer<msgpack::sbuffer> &packer);
@@ -69,6 +71,7 @@ private:
     void ParseCfg(const string &cfg);
     eRpcFieldType GetArgTypeByName(const string & name);
     int CheckFieldType(int field_type, PyObject *item);
+    int GetPathFiles(const char *basePath, vector<string> & filelist);
 private:
     map<string, RPC_PID> m_Name2Pid;
     map<RPC_PID, stRpcFunction *> m_RpcTable;

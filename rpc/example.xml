@@ -1,12 +1,14 @@
 <root>
     <server>
-        <path>example/helo</path>
         <function>rpc_server_hello_req</function>
+        <path>hello</path>
         <args>
             <!-- 操作ID -->
             <arg>RPC_INT</arg>
+            <arg>RPC_BOOL</arg>
             <arg>RPC_PB</arg>
             <arg>RPC_STRING</arg>
+            <arg>RPC_FLOAT</arg>
         </args>
         <deamon>1</deamon>
     </server>
@@ -15,10 +17,8 @@
         <args>
             <!-- 操作ID -->
             <arg>RPC_INT</arg>
-            <arg>RPC_BOOL</arg>
             <arg>RPC_PB</arg>
             <arg>RPC_STRING</arg>
-            <arg>RPC_FLOAT</arg>
         </args>
     </client>
 </root>

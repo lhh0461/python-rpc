@@ -1,15 +1,17 @@
+#include <Python.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <iostream>
 #include <string.h>
-#include <Python.h>
+#include <dirent.h>
+#include <unistd.h>
 
 #include <msgpack.hpp>
 #include <tinyxml2.h>
 
 #include "Rpc.h"
-#include "Util.h"
+#include "Script.h"
 
 using namespace std;
 using namespace tinyxml2;
@@ -35,6 +37,10 @@ CRpc::~CRpc()
 int CRpc::Init(const string & cCfgPath)
 {
     ParseCfg(cCfgPath);
+    for (auto it = m_RpcTable.begin(); it != m_RpcTable.end(); it++) {
+        stRpcFunction *pFunc = it->second;
+        printf("type=%d,pid=%d,name=%s,module=%s\n", pFunc->type, pFunc->pid, pFunc->name.c_str(), pFunc->module.c_str());
+    }
 }
 
 eRpcFieldType CRpc::GetArgTypeByName(const string & name)
@@ -93,9 +99,46 @@ void CRpc::ParseSection(XMLElement *root, eRpcType type, const char * name, std:
     }
 }
 
-bool CompareFunc(const stRpcFunction *first, const stRpcFunction *second)
+static bool _CompareFunc(const stRpcFunction *first, const stRpcFunction *second)
 {
     return first->module < second->module && first->name < second->name;
+}
+
+int CRpc::GetPathFiles(const char *basePath, vector<string> & filelist)
+{
+    std::vector<std::string> result;
+    DIR *dir;
+    struct dirent *ptr;
+    char base[1000];
+
+    if ((dir=opendir(basePath)) == NULL)
+    {
+        perror("Open dir error...");
+        exit(1);
+    }
+
+    while ((ptr=readdir(dir)) != NULL)
+    {
+        if(strcmp(ptr->d_name,".")==0 || strcmp(ptr->d_name,"..")==0)    ///current dir OR parrent dir
+            continue;
+        else if(ptr->d_type == 8)    ///file
+        {
+            filelist.push_back(std::string(basePath)+std::string(ptr->d_name));
+        }
+        else if(ptr->d_type == 10)    ///link file
+        {
+            filelist.push_back(std::string(ptr->d_name));
+        }
+        else if(ptr->d_type == 4)    ///dir
+        {
+            strcpy(base,basePath);
+            strcat(base,"/");
+            strcat(base,ptr->d_name);
+            filelist.push_back(std::string(ptr->d_name));
+            GetPathFiles(base, filelist);
+        }
+    }
+    closedir(dir);
 }
 
 void CRpc::ParseCfg(const string &cCfgPath)
@@ -104,22 +147,32 @@ void CRpc::ParseCfg(const string &cCfgPath)
     std::list<stRpcFunction *> lRpcList;
     vector<string> vecCfgList;
     GetPathFiles(cCfgPath.c_str(), vecCfgList);
-    for (auto it = vecCfgList.begin(); it != vecCfgList.end(); it++)
+
+    try
     {
-        doc.LoadFile(it->c_str());
-        XMLElement *root = doc.FirstChildElement("root");
-        if (root) {
-            ParseSection(root, RPC_SERVER, "server", lRpcList);
-            ParseSection(root, RPC_CLIENT, "client", lRpcList);
-            ParseSection(root, RPC_HOST, "host", lRpcList);
-        } else {
-            assert(0);
+        for (auto it = vecCfgList.begin(); it != vecCfgList.end(); it++)
+        {
+            doc.LoadFile(it->c_str());
+            XMLElement *root = doc.FirstChildElement("root");
+            if (root) {
+                ParseSection(root, RPC_SERVER, "server", lRpcList);
+                ParseSection(root, RPC_CLIENT, "client", lRpcList);
+                ParseSection(root, RPC_HOST, "host", lRpcList);
+            } else {
+                assert(0);
+            }
         }
     }
-    lRpcList.sort(CompareFunc);
+    catch(...)
+    {
+       cout << "catch xml exception " << endl; 
+    }
+
+    lRpcList.sort(_CompareFunc);
     RPC_PID pid = 1;
     for (auto it : lRpcList) {
         m_Name2Pid[it->name] = pid;
+        it->pid = pid;
         m_RpcTable[pid] = it;
         pid++;
     }
@@ -199,10 +252,12 @@ int CRpc::PackField(eRpcFieldType field, PyObject *item, msgpack::packer<msgpack
                 break;
             }
         case RPC_BOOL:
-            if (PyBool_Check(item))
+            if (PyBool_Check(item)) {
                 packer.pack(item == Py_True ? true : false);
-            if (PyLong_CheckExact(item))
+            }
+            else if (PyLong_CheckExact(item)) {
                 packer.pack(PyLong_AsLong(item) > 0 ? true : false);
+            }
             break;
         default:
             fprintf(stderr, "pack field unknown field type=%d\n", field);
@@ -268,6 +323,26 @@ PyObject *CRpc::UnPackField(eRpcFieldType field, msgpack::unpacker &unpacker)
 }
 
 //unpack buf to obj data
+PyObject * CRpc::UnPack(RPC_PID pid, msgpack::unpacker &unpacker)
+{
+    PyObject *obj;
+    PyObject *field;
+
+    const stRpcFunction *pFunction = GetFunctionById(pid);
+    obj = PyTuple_New(pFunction->args.size());
+
+    int i = 0;
+    for (auto iter : pFunction->args) {
+        if ((field = this->UnPackField(iter, unpacker)) == NULL) {
+            Py_DECREF(obj);
+            return NULL;
+        }
+        PyTuple_SetItem(obj, i++, field);
+    }
+    return obj;
+}
+
+//unpack buf to obj data
 PyObject * CRpc::UnPack(const char *buf, size_t len)
 {
     PyObject *obj;
@@ -296,6 +371,43 @@ PyObject * CRpc::UnPack(const char *buf, size_t len)
         PyTuple_SetItem(obj, i++, field_value);
     }
     return obj;
+}
+
+int CRpc::Dispatch(const char *buf, size_t len)
+{
+    PyObject *obj;
+
+    msgpack::unpacker unpacker;
+    unpacker.reserve_buffer(len);
+
+    memcpy(unpacker.buffer(), buf, len);
+    unpacker.buffer_consumed(len);
+    msgpack::object_handle result;
+
+    unpacker.next(result);
+    msgpack::object msg_obj = result.get();
+    RPC_PID pid = msg_obj.via.u64;
+
+    const stRpcFunction *pFunction = GetFunctionById(pid);
+    if (pFunction == NULL) {
+        fprintf(stderr, "CRpc::Dispatch can't find pid function. pid=%d\n", pid);
+        return -1;
+    }
+
+    obj = UnPack(pid, unpacker);
+    if (obj == NULL) {
+        fprintf(stderr, "CRpc::Dispatch unpack fail. pid=%d\n", pid);
+        return -1;
+    }
+
+    if (CallScriptFunction(pFunction->module.c_str(), pFunction->name.c_str(), obj) < 0) {
+        fprintf(stderr, "CRpc::Dispatch call script function fail. module=%s,function=%s\n", pFunction->module.c_str(), pFunction->name.c_str());
+        Py_DECREF(obj);
+        return -1;
+    }
+
+    Py_DECREF(obj);
+    return 0;
 }
 
 int main()
