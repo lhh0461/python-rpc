@@ -104,7 +104,7 @@ static bool _CompareFunc(const stRpcFunction *first, const stRpcFunction *second
     return first->module < second->module && first->name < second->name;
 }
 
-int CRpc::GetPathFiles(const char *basePath, vector<string> & filelist)
+int CRpc::GetRpcCfgFiles(const char *basePath, vector<string> & vecFilelist)
 {
     std::vector<std::string> result;
     DIR *dir;
@@ -124,8 +124,8 @@ int CRpc::GetPathFiles(const char *basePath, vector<string> & filelist)
         else if(ptr->d_type == DT_REG)    ///file
         {
             string filename = ptr->d_name;
-            if (filename.rfind(".xml")==(filename.length()-sub.length())) {
-                filelist.push_back(std::string(basePath)+std::string(ptr->d_name));
+            if (filename.rfind(".xml")==(filename.length()-strlen(".xml"))) {
+                vecFilelist.push_back(std::string(basePath)+std::string(ptr->d_name));
             }
         }
     }
@@ -137,7 +137,7 @@ void CRpc::ParseCfg(const string &cCfgPath)
     XMLDocument doc;
     std::list<stRpcFunction *> lRpcList;
     vector<string> vecCfgList;
-    GetPathFiles(cCfgPath.c_str(), vecCfgList);
+    GetRpcCfgFiles(cCfgPath.c_str(), vecCfgList);
 
     for (auto it = vecCfgList.begin(); it != vecCfgList.end(); it++)
     {
@@ -238,8 +238,7 @@ int CRpc::PackField(eRpcFieldType field, PyObject *item, msgpack::packer<msgpack
         case RPC_BOOL:
             if (PyBool_Check(item)) {
                 packer.pack(item == Py_True ? true : false);
-            }
-            else if (PyLong_CheckExact(item)) {
+            } else if (PyLong_CheckExact(item)) {
                 packer.pack(PyLong_AsLong(item) > 0 ? true : false);
             }
             break;
@@ -273,7 +272,6 @@ int CRpc::Pack(RPC_PID pid, PyObject *obj, msgpack::sbuffer &sbuf)
     packer.pack(pid);
     int i = 0;
     for (auto iter : pFunction->args) {
-        cout << iter << endl;
         if (this->PackField(iter, PyTuple_GetItem(obj, i++), packer) != 0) return -1;
     }
 
@@ -394,6 +392,7 @@ int CRpc::Dispatch(const char *buf, size_t len)
     return 0;
 }
 
+/*
 int main()
 {
     CRpc *pRpc = new CRpc();
@@ -421,3 +420,4 @@ int main()
     PyObject_Print((PyObject *)up, stdout, 0);
     printf("\n");
 }
+*/

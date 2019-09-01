@@ -71,7 +71,7 @@ private:
     void ParseCfg(const string &cfg);
     eRpcFieldType GetArgTypeByName(const string & name);
     int CheckFieldType(int field_type, PyObject *item);
-    int GetPathFiles(const char *basePath, vector<string> & filelist);
+    int GetRpcCfgFiles(const char *basePath, vector<string> & filelist);
 private:
     map<string, RPC_PID> m_Name2Pid;
     map<RPC_PID, stRpcFunction *> m_RpcTable;
