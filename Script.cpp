@@ -17,26 +17,35 @@ int CallScriptFunction(const char *module, const char *function, PyObject *args)
     if (pModule == NULL) {
         fprintf(stderr, "Failed to load \"%s\"\n", module);
         PyErr_Print();
-        goto import_error;
+        Py_DECREF(pName);
+        return -1;
     }
 
     pFunc = PyObject_GetAttrString(pModule, function);
     if (pFunc == NULL) {
         fprintf(stderr, "Cannot find function \"%s\"\n", function);
         PyErr_Print();
-        goto function_error;
+        Py_DECREF(pName);
+        Py_DECREF(pModule);
+        return -1;
     }
 
     if (!PyCallable_Check(pFunc)) {
         fprintf(stderr, "Function must be callable\"%s\"\n", function);
-        goto call_error;
+        Py_DECREF(pName);
+        Py_DECREF(pModule);
+        Py_DECREF(pFunc);
+        return -1;
     }
 
     if (args != NULL) {
         if (!PyTuple_CheckExact(args)) {
-            fprintf(stderr, "args must be tuple\n");
+            fprintf(stderr, "Args must be tuple\n");
             PyObject_Print(args, stdout, 0);
-            goto call_error;
+            Py_DECREF(pName);
+            Py_DECREF(pModule);
+            Py_DECREF(pFunc);
+            return -1;
         }
     }
 
@@ -44,20 +53,15 @@ int CallScriptFunction(const char *module, const char *function, PyObject *args)
     if (pResult == NULL) {
         fprintf(stderr,"Call failed\n");
         PyErr_Print();
-        goto call_error;
+        Py_DECREF(pName);
+        Py_DECREF(pModule);
+        Py_DECREF(pFunc);
+        return -1;
     }
 
     Py_DECREF(pName);
     Py_DECREF(pResult);
-    Py_XDECREF(pFunc);
+    Py_DECREF(pFunc);
     Py_DECREF(pModule);
     return 0;
-
-call_error:
-    Py_DECREF(pFunc);
-function_error:
-    Py_DECREF(pModule);
-import_error:
-    Py_DECREF(pName);
-    return -1;
 }

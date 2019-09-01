@@ -121,21 +121,12 @@ int CRpc::GetPathFiles(const char *basePath, vector<string> & filelist)
     {
         if(strcmp(ptr->d_name,".")==0 || strcmp(ptr->d_name,"..")==0)    ///current dir OR parrent dir
             continue;
-        else if(ptr->d_type == 8)    ///file
+        else if(ptr->d_type == DT_REG)    ///file
         {
-            filelist.push_back(std::string(basePath)+std::string(ptr->d_name));
-        }
-        else if(ptr->d_type == 10)    ///link file
-        {
-            filelist.push_back(std::string(ptr->d_name));
-        }
-        else if(ptr->d_type == 4)    ///dir
-        {
-            strcpy(base,basePath);
-            strcat(base,"/");
-            strcat(base,ptr->d_name);
-            filelist.push_back(std::string(ptr->d_name));
-            GetPathFiles(base, filelist);
+            string filename = ptr->d_name;
+            if (filename.rfind(".xml")==(filename.length()-sub.length())) {
+                filelist.push_back(std::string(basePath)+std::string(ptr->d_name));
+            }
         }
     }
     closedir(dir);
@@ -148,24 +139,17 @@ void CRpc::ParseCfg(const string &cCfgPath)
     vector<string> vecCfgList;
     GetPathFiles(cCfgPath.c_str(), vecCfgList);
 
-    try
+    for (auto it = vecCfgList.begin(); it != vecCfgList.end(); it++)
     {
-        for (auto it = vecCfgList.begin(); it != vecCfgList.end(); it++)
-        {
-            doc.LoadFile(it->c_str());
-            XMLElement *root = doc.FirstChildElement("root");
-            if (root) {
-                ParseSection(root, RPC_SERVER, "server", lRpcList);
-                ParseSection(root, RPC_CLIENT, "client", lRpcList);
-                ParseSection(root, RPC_HOST, "host", lRpcList);
-            } else {
-                assert(0);
-            }
+        doc.LoadFile(it->c_str());
+        XMLElement *root = doc.FirstChildElement("root");
+        if (root) {
+            ParseSection(root, RPC_SERVER, "server", lRpcList);
+            ParseSection(root, RPC_CLIENT, "client", lRpcList);
+            ParseSection(root, RPC_HOST, "host", lRpcList);
+        } else {
+            assert(0);
         }
-    }
-    catch(...)
-    {
-       cout << "catch xml exception " << endl; 
     }
 
     lRpcList.sort(_CompareFunc);
