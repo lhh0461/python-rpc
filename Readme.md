@@ -36,8 +36,8 @@
     </root>
 
 #例子
-用户代码 
-    test_rpc.py
+用户代码 test_rpc.py
+
     import rpc
     import google.protobuf 
     import sys
@@ -61,8 +61,8 @@
     
     rpc.rpc_call(packer_buf)
 
-远程代码
-    scripts.hello.py
+远程代码 scripts.hello.py
+    
     import google.protobuf 
     import hello_pb2
     
