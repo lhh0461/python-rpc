@@ -1,6 +1,12 @@
 # python-rpc
 一个Python的rpc模块
-需要在python3.5以上版本
+
+#依赖库
+
+    1、需要在python3.5以上版本
+    2、需要python protobuf
+    3、依赖库tinyxml2已经集成到项目中
+    4、依赖库msgpack已经集成到项目中
 
 #使用方法
 在rpc目录下增加xml的rpc配置文件
